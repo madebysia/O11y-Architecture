@@ -1,0 +1,41 @@
+#OTEL YAML
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: otel-collector
+  namespace: observability
+  labels:
+    app: otel-collector
+spec:
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+      - name: otel-collector
+        image: otel/opentelemetry-collector-contrib:latest
+        args: ["--config=/conf/collector-config.yaml"]
+        env:
+        # Secrets management: Reference your tokens securely
+        - name: DT_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: dt-secrets
+              key: api-token
+        - name: SPLUNK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: splunk-secrets
+              key: hec-token
+        volumeMounts:
+        - name: otel-collector-config-vol
+          mountPath: /conf
+      volumes:
+      - name: otel-collector-config-vol
+        configMap:
+          name: otel-collector-conf
