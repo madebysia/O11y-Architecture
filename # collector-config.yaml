@@ -1,0 +1,39 @@
+# collector-config.yaml
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+processors:
+  batch:
+  # Staff Move: Cost-optimization (ROM) by filtering redundant logs
+  filter/drop_noise:
+    logs:
+      log_record:
+        - 'body == "healthcheck"'
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+  otlp/dynatrace:
+    endpoint: "${DT_ENDPOINT}"
+    headers:
+      Authorization: "Api-Token ${DT_API_TOKEN}"
+  splunk_hec:
+    endpoint: "${SPLUNK_URL}"
+    token: "${SPLUNK_TOKEN}"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      exporters: [prometheus, otlp/dynatrace]
+    traces:
+      receivers: [otlp]
+      exporters: [otlp/dynatrace]
+    logs:
+      receivers: [otlp]
+      processors: [batch, filter/drop_noise]
+      exporters: [splunk_hec]
