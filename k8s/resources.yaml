@@ -1,0 +1,35 @@
+# Resources
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: observability
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-conf
+  namespace: observability
+data:
+  # This references the logic we already pushed!
+  collector-config.yaml: |
+    # (The content of your collector-config.yaml goes here)
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dt-secrets
+  namespace: observability
+type: Opaque
+stringData:
+  api-token: "PLACEHOLDER_FOR_DYNATRACE"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: splunk-secrets
+  namespace: observability
+type: Opaque
+stringData:
+  hec-token: "PLACEHOLDER_FOR_SPLUNK"
